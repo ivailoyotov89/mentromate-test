@@ -1,4 +1,4 @@
 # mentromate-test
-Answer to Rookie to Rockstar Full-Stack internship test for programming skills
+Solution to Rookie to Rockstar Full-Stack internship test for programming skills
 
-This HTML file has a JavaScript code which is use to anwer the 1st assignment for be part of the internship at MentorMate
+This HTML file contains a JavaScript code which is used to solve the 1st phase's assignment for internship at MentorMate
