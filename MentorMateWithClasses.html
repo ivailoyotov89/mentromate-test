@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<script>
+var resultsDiv = document.createElement("div"); 
+document.body.appendChild(resultsDiv);
+
+class Grid {
+	//Setup
+	constructor(_gwidth, _gheight, _autofill=null){
+	
+		this.gwidth = _gwidth;
+		this.gheight = _gheight;
+		
+		this._gridElements = new Array(_gheight);
+		for(var yy=0; yy<_gwidth; yy++){
+			for(var xx=0; xx<_gwidth; xx++){
+				this._gridElements[yy] = new Array(_gwidth);
+				this._gridElements[yy][xx] = _autofill;
+			}
+		}
+		
+		this.gridElementsOriginal = this.gridElements.map(function(arr) {
+			return arr.slice();
+		});
+	}
+	
+	get gridElements(){
+		return this._gridElements;
+	}
+	set gridElements(grid){
+		var gridValueIsGood = true;
+		if(grid.length == this.gheight){
+			for(var i=0; i<grid.length; i++){
+				if(grid[i].length != this.gwidth){
+					gridValueIsGood = false;
+					break;
+				}
+			}
+		}
+		
+		if(gridValueIsGood){
+			this._gridElements = grid.map(function(arr) {
+				return arr.slice();
+			});
+		}
+	}
+	
+	setCurrentAsOriginalGrid(){
+		this.gridElementsOriginal = this.gridElements.map(function(arr) {
+			return arr.slice();
+		});
+	}
+	
+	printOriginalGrid(){
+		var row = "";
+		for( var rowNum = 0; rowNum < this.gheight; rowNum++){
+			for( var colNum = 0; colNum < this.gwidth; colNum++){
+				if( this.gridElementsOriginal[rowNum][colNum] == null) row += "Null ";
+				else row += this.gridElementsOriginal[rowNum][colNum]+" ";
+			}
+			row +="<br/>"
+		}
+		
+		return row;
+	}
+	
+	setRow(rowNum, rowValues){
+		var answer = true;
+		
+		if(typeof this.gridElements[rowNum] == 'undefined') {
+			answer = false; 
+			console.log("no row index of "+rowNum)
+		}
+		else {
+		  var rowValuesToArray = rowValues.split(''); // empty string separator
+			this.gridElements[rowNum] = rowValuesToArray;
+		}
+		return answer;
+	}
+	
+	isGridCellExists(cellX, cellY){
+		var answer = true;
+		
+		if(typeof this.gridElements[cellY] == 'undefined') answer = false; 
+		else if(typeof this.gridElements[cellY][cellX] == 'undefined') answer = false; 
+
+		return answer;
+	}
+	
+	setGridCell(cellX, cellY, value){
+		if(	this.isGridCellExists(cellX, cellY) ) this.gridElements[cellY][cellX] = value;
+	}
+	
+	getGridCell(cellX, cellY){
+		if(	this.isGridCellExists(cellX, cellY) ) return this.gridElements[cellY][cellX];
+	}
+	
+	getCellNeighborsByValue(currX, currY, typeVal){
+		var neighborsNumber = 0;
+		//check if there are any Neighbors on the Bottom and set yEndAt
+		if(currY-1 >= 0){
+			var yStartFrom = -1
+		}
+		else var yStartFrom = 0;
+		
+		//check if there are any Neighbors on the Bottom and set yEndAt
+		if(currY+1 < this.gheight ){
+			var yEndAt = 1
+		}else var yEndAt = 0
+		
+		//check if there are any Neighbors on the Left and set startFromY
+		if(currX-1 >= 0){
+			var xStartFrom = -1
+		}
+		else var xStartFrom = 0;
+		
+		//check if there are any Neighbors on the Right and set yEndAt
+		if(currX+1 < this.gwidth){
+			var xEndAt = 1;
+		}else var xEndAt = 0;
+		
+		for( var yy = yStartFrom; yy<yEndAt+1; yy++){
+			for( var xx = xStartFrom; xx<xEndAt+1; xx++){
+				//check if this are the coordinates of the base/current cell
+				if( !((yy)==0 && (xx)==0) ){
+					if( this.gridElements[currY+yy][currX+xx] == typeVal) neighborsNumber++
+				}
+			}
+		}
+		
+		return neighborsNumber;
+	}
+	
+	
+}//end class Grid
+
+/// ADDTIONAL FUNCTIONS
+function validateAsIntiger(value){
+	return !isNaN(value) && parseInt(Number(value)) == value && !isNaN(parseInt(value, 10));
+}
+
+function validateAsOnesAndZeroes(value){
+	var answer = true;
+	var valueToArray = value.split('');
+	for(var i=0; i<valueToArray.length; i++){
+		
+		if( parseInt(valueToArray[i]) !=0 && parseInt(valueToArray[i])!=1 ){
+			answer = false;
+			break
+		}
+	}
+	
+	return answer;
+}
+
+//Setting up the grid's dimentions
+var gridWHnotReady = true;
+var Y = 0;
+var X = 0;
+
+while(gridWHnotReady){
+	
+	/// Setup X and validating it
+	xIsNotSet = true;
+	while(xIsNotSet){
+		X = prompt("Enter an Intiger number bigger than 0 for grid's Width");
+		if(validateAsIntiger(X)) xIsNotSet = false;
+		else  alert("Incorrect value");
+	};
+	
+	/// Setup Y and validating it
+	yIsNotSet = true;
+	while(yIsNotSet){
+		Y = prompt("Enter an Intiger number bigger than 0 for grid's Height");
+		if(validateAsIntiger(Y) ) yIsNotSet = false; 
+		else alert("Incorrect value");
+	};
+	
+	/// validating the grid 
+	if(X>0 && Y>0 && X*Y <=1000) gridWHnotReady = false;
+	else{
+		if(X<=0 || Y<=0) alert("One of the parameter is equal or less than 0");
+		if(X*Y >1000) alert("Grid is too big. The grid must contain NO more than 1000 cells");
+	};
+
+}
+
+//Creating the grid
+let myGrid = new Grid(X,Y);
+
+//Filling the grid
+for(var rowNum = 0; rowNum < Y; rowNum++){
+	var strlen=0;
+	var rowIsNotSet = true;
+	
+	while( rowIsNotSet ){
+		var rowStringInput = prompt("Enter a String of 1 and 0 up to "+X+" symbols for row #"+(rowNum+1) );
+		var strlen = parseInt(rowStringInput.length);
+		
+		if ( X == strlen && validateAsOnesAndZeroes(rowStringInput)){ 
+			myGrid.setRow(rowNum, rowStringInput)
+			rowIsNotSet=false;
+		}
+		else alert("Incorrect value");
+	};
+	
+}
+
+// saving the generation 0 grid 
+myGrid.setCurrentAsOriginalGrid();
+
+/// Setup X coordinate of targeted cell
+var targetedCellCoordsNotReady = true;
+while( targetedCellCoordsNotReady){
+	var x1 = prompt("Enter an Intiger number between 0 and "+(X-1)+"(including) for X coordinate of the targeted cells");
+	var y1 = prompt("Enter an Intiger number between 0 and "+(Y-1)+"(including) for Y coordinate of the targeted cells");
+	
+	if( myGrid.isGridCellExists(x1,y1) ) targetedCellCoordsNotReady = false;
+	else alert("Incorrect coordinates ("+x1+","+y1+"), cell does NOT exist");
+};
+
+/// Setup number of generations
+var NIsNotSet = true;
+var N = 0;
+while( NIsNotSet ){
+	var N = prompt("Enter an Intiger number bigger than 0 for how many generations to be done");
+	if(parseInt(N) > 0 && validateAsIntiger(N) ){
+		N = parseInt(N); //in case N is still considered as string
+		NIsNotSet = false;
+	}
+	else alert("Incorrect value");
+};
+
+// setup variable to track now many time the Targeted cell was green
+var grnNunTimes = 0;
+
+// start the generations and track data including GenZero
+for(var gen = 0; gen< N+1; gen++){
+
+	//if targeted cell is green -> track
+	if(parseInt(myGrid.getGridCell(x1,y1)) == 1) grnNunTimes++;
+	
+	/// setup variable to save changes while going through theGrid
+	var theGridClone = myGrid.gridElements.map(function(arr) {
+		return arr.slice();
+	});
+	
+	//modify cells
+	for(var  currY=0; currY< Y; currY++){
+		for(var  currX=0; currX< X; currX++){
+			
+			var greenNeighborsNumber = myGrid.getCellNeighborsByValue(currX, currY, 1);
+			
+			// if current cell is green
+			if( parseInt(myGrid.getGridCell(currX,currY)) == 1){
+				//does it stay green
+				if( greenNeighborsNumber==2 || greenNeighborsNumber==3 || greenNeighborsNumber==6) theGridClone[currY][currX] = 1;
+				else theGridClone[currY][currX] = 0;
+			}else{
+				//does red cell becomes green
+				if( greenNeighborsNumber==3 || greenNeighborsNumber==6) theGridClone[currY][currX] = 1;
+				else theGridClone[currY][currX] = 0;
+			
+			}
+		
+		}
+	}
+	
+	// save cell changes after going through the whole grid
+	myGrid.gridElements = theGridClone;
+
+}
+
+//WHITE RESULTS
+//grid dimentions
+resultsDiv.innerHTML += X+"x"+Y+"<br/>";
+
+//white the grid elements
+resultsDiv.innerHTML += myGrid.printOriginalGrid();
+
+//targeted cell coordinates, number of generations
+resultsDiv.innerHTML += x1+", "+y1+", "+N+"<br/>";
+
+//targeted cell results
+resultsDiv.innerHTML += "#result: "+grnNunTimes+" times.";
+
+</script>
